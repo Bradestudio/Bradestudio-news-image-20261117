@@ -119,3 +119,18 @@ Validasi lokal (semua LOLOS):
 `~/workspace/makefun/news-image-20261117-entry/` — main.py, entry.png
 (111.100 bytes, sha256 d19b0c0b…c2b1ef1c9b), gen_image.py, LICENSE,
 README.md, BUILD-REPORT.md (file ini).
+
+## UPGRADE v2 — 18 Nov 2026 ~11:00–12:00 WIB (builder sesi 408007ba)
+Perintah Andi: "buat sebagus mungkin, lihat top 1 leaderboard, ambil langkahnya, kembangkan".
+Pola top 1 (el-net 990.846, nabil-naufal 990.809, 3.517 entry) dicek visual langsung:
+koran padat 30-40 berita (12 panel utama + daftar bernomor + peta dunia pin bernomor).
+Entry v1 cuma 5 berita — itu yang bikin kalah.
+- gen_image.py ditulis ulang: masthead + tanggal, 2 lead (Kerch, Hormuz) + 10 panel
+  kecil berikon, daftar "ALSO ON" 13–40, peta dunia (poligon benua + pin bernomor
+  1–12, pin kecil untuk 13–40). 40 cerita total, riset silang top-1/top-2 + daily
+  briefs + web search (Kerch, Hormuz, Manila/Quad, Ebola, measles, COP31, dll).
+- entry.png BARU: 1024×1024, 152.443 byte, sha256 14c6540ebd6db7b50c70db60d4be3b933a3adc839e2bac5ca57f906f0fedf4f2.
+- Validasi: gen 2x byte-identik; main.py 2x byte-identik; ukuran < 1 MiB; dicek visual
+  (footer penuh, teks tidak terpotong/tumpang tindih, pin peta terbaca).
+- main.py TIDAK berubah (tetap stdlib-only, copy entry.png).
+- Resubmit v2: bundle HARUS memuat sesi asli 4ea716c2 + sesi upgrade 408007ba.
