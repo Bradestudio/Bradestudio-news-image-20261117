@@ -134,3 +134,14 @@ Entry v1 cuma 5 berita — itu yang bikin kalah.
   (footer penuh, teks tidak terpotong/tumpang tindih, pin peta terbaca).
 - main.py TIDAK berubah (tetap stdlib-only, copy entry.png).
 - Resubmit v2: bundle HARUS memuat sesi asli 4ea716c2 + sesi upgrade 408007ba.
+
+## UPGRADE v3 — 18 Nov 2026 ~11:00–12:00 WIB (builder sesi 408007ba)
+Penegasan Andi: pola top 1 BUKAN untuk dicontoh mentah-mentah — harus DIKEMBANGKAN
+sampai LEBIH BAIK dari top 1. Pembeda vs top 1 (el-net 40 berita):
+- Strip "BY THE NUMBERS" (tidak ada di top 1): 40 satelit hilang · 11.000+ kasus
+  Ebola · 146.000 berdemo di Prancis · 66–52 vote Knesset · Dow −849.
+- Cakupan LEBIH lengkap: 42 berita (top 1: 40) — tambah Dow −849 + Bitcoin ~$64.000.
+- Dot peta berkode warna per kawasan + legenda (top 1 hanya dot merah/nomor).
+- Layout dipertahankan padat + tipografi headline lebih besar dari top 1.
+- entry.png v3: 1024×1024, 162.621 byte, sha256 81435adb5bc4da4d14486e75ec4264e671c1b3b6db9ef59196d7922ed0e3f7ff.
+- Validasi: gen 2x + main.py 2x byte-identik; dicek visual.

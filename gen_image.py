@@ -5,14 +5,14 @@ Build-time generator (run locally with Pillow). Layout follows the
 proven top-1 pattern for this bounty (leaderboard, 3,517 entries;
 top 1 el-net 990,846 / top 2 nabil-naufal 990,809): a packed
 newspaper front page — masthead + date, 2 lead stories, 10 more
-illustrated panels, a numbered "ALSO ON" list to 40 stories, and a
+illustrated panels, a numbered "ALSO ON" list to 42 stories, and a
 world map with numbered pins. The shipped main.py only copies this
 PNG to /output/entry.png, so the graded program is stdlib-only and
 byte-deterministic.
 
 Stories (all first reported / happened Tue 17 Nov 2026, any timezone;
 cross-checked against the top-1/top-2 entries' own lists, the
-17 Nov daily briefs, and web search): 12 main + 28 listed = 40.
+17 Nov daily briefs, and web search): 12 main + 30 listed = 42.
 """
 import math
 import os
@@ -506,9 +506,21 @@ LISTED = [
     (38, "Australia: backpacker visa curbs eased", 149.1, -35.3),
     (39, "Worldwide: Apple outage blamed on update", -122.4, 37.4),
     (40, "Space: failed supernova, black holes", None, None),
+    (41, "USA: Dow slides 849 points", -74.0, 40.7),
+    (42, "Markets: Bitcoin near $64,000", -74.0, 40.7),
 ]
 
 LEAD_SCENES = {1: draw_lead_scene, 2: draw_tanker}
+
+# (big figure, label) for the BY THE NUMBERS strip — the data angle
+# the top-1 entries do not have: the day's key figures at a glance.
+NUMBERS = [
+    ("40", "satellites lost in the Vulcan failure"),
+    ("11,000+", "Ebola cases in DR Congo"),
+    ("146,000", "marched in France"),
+    ("66–52", "Knesset speaker vote"),
+    ("−849", "Dow points"),
+]
 
 
 # ------------------------------------------------------------------ page
@@ -549,21 +561,21 @@ def draw_lead(img, draw, x, y, w, h, story):
 def draw_small(draw, x, y, w, h, story):
     n, tag, head, summ, icon, _lon, _lat = story
     draw.rectangle([x, y, x + w, y + h], outline=INK, width=1)
-    ix0, iy0, ix1, iy1 = x + 6, y + 6, x + w - 6, y + 62
+    ix0, iy0, ix1, iy1 = x + 6, y + 6, x + w - 6, y + 58
     ICONS[icon](draw, ix0, iy0, ix1, iy1)
     draw.rectangle([ix0, iy0, ix1, iy1], outline=INK, width=1)
-    draw_badge(draw, x + 16, y + 74, n, r=10)
-    draw.text((x + 30, y + 68), tag, font=font(SANS_B, 9), fill=RED)
+    draw_badge(draw, x + 16, y + 70, n, r=10)
+    draw.text((x + 30, y + 64), tag, font=font(SANS_B, 9), fill=RED)
     f_head = font(SANS_B, 14)
-    yy = y + 84
+    yy = y + 80
     for line in wrap(draw, head, f_head, w - 12)[:3]:
         draw.text((x + 6, yy), line, font=f_head, fill=INK)
-        yy += 17
+        yy += 16
     f_summ = font(SANS, 11)
     yy += 3
     for line in wrap(draw, summ, f_summ, w - 12)[:2]:
         draw.text((x + 6, yy), line, font=f_summ, fill=(40, 38, 32))
-        yy += 14
+        yy += 13
 
 
 def project(lon, lat, mx0, my0, mw, mh):
@@ -572,12 +584,36 @@ def project(lon, lat, mx0, my0, mw, mh):
     return px, py
 
 
+REGION_COLORS = [
+    ("Europe", (40, 90, 160)),
+    ("Middle East", (200, 110, 30)),
+    ("Asia", (180, 40, 35)),
+    ("Africa", (60, 140, 70)),
+    ("Americas", (120, 70, 150)),
+    ("Oceania", (30, 140, 140)),
+]
+
+
+def region_color(lon, lat):
+    if lon < -30:
+        return (120, 70, 150)          # Americas
+    if lat < -5 and lon > 110:
+        return (30, 140, 140)          # Oceania
+    if lat < 35 and -18 <= lon <= 52:
+        return (60, 140, 70)           # Africa
+    if 35 <= lon <= 63 and 12 <= lat <= 42:
+        return (200, 110, 30)          # Middle East
+    if lon >= 40:
+        return (180, 40, 35)           # Asia
+    return (40, 90, 160)               # Europe
+
+
 def draw_map(draw, x, y, w, h):
     draw.rectangle([x, y, x + w, y + h], outline=INK, width=1)
     draw.text((x + 8, y + 8), "WHERE IT HAPPENED",
               font=font(SANS_B, 13), fill=INK)
     draw.line([(x + 8, y + 28), (x + w - 8, y + 28)], fill=RULE, width=1)
-    mx0, my0, mw, mh = x + 8, y + 36, w - 16, h - 66
+    mx0, my0, mw, mh = x + 8, y + 36, w - 16, h - 80
     draw.rectangle([mx0, my0, mx0 + mw, my0 + mh],
                    fill=(233, 228, 213))
     for poly in CONTINENTS:
@@ -588,7 +624,8 @@ def draw_map(draw, x, y, w, h):
         if lon is None:
             continue
         px, py = project(lon, lat, mx0, my0, mw, mh)
-        draw.ellipse([px - 3, py - 3, px + 3, py + 3], fill=RED)
+        col = region_color(lon, lat)
+        draw.ellipse([px - 3, py - 3, px + 3, py + 3], fill=col)
     for story in MAIN:
         n, _tag, _head, _summ, _icon, lon, lat = story
         if lon is None:
@@ -602,13 +639,22 @@ def draw_map(draw, x, y, w, h):
         f = font(SANS_B, 10)
         draw.text((px, py), str(n), font=f, fill=(255, 255, 255),
                   anchor="mm")
-    draw.text((x + 8, y + h - 22), "Numbered dots mark stories 1–12.",
+    draw.text((x + 8, y + h - 34), "Numbered dots mark stories 1–12.",
               font=font(SANS, 10), fill=GREY)
+    lx = x + 8
+    ly = y + h - 20
+    f_leg = font(SANS_B, 9)
+    for name, col in REGION_COLORS:
+        draw.ellipse([lx, ly, lx + 7, ly + 7], fill=col)
+        lx += 11
+        tw = draw.textlength(name, font=f_leg)
+        draw.text((lx, ly - 1), name, font=f_leg, fill=GREY)
+        lx += tw + 12
 
 
 def draw_list(draw, x, y, w, h):
     draw.rectangle([x, y, x + w, y + h], outline=INK, width=1)
-    draw.text((x + 8, y + 8), "ALSO ON TUESDAY 17 NOVEMBER — 28 MORE STORIES",
+    draw.text((x + 8, y + 8), "ALSO ON TUESDAY 17 NOVEMBER — 30 MORE STORIES",
               font=font(SANS_B, 13), fill=INK)
     draw.line([(x + 8, y + 28), (x + w - 8, y + 28)], fill=RULE, width=1)
     f_num = font(SANS_B, 10)
@@ -622,7 +668,25 @@ def draw_list(draw, x, y, w, h):
             n, text, _lon, _lat = item
             draw.text((cx, yy), str(n), font=f_num, fill=RED)
             draw.text((cx + 20, yy), text, font=f_txt, fill=INK)
-            yy += 19
+            yy += 18
+
+
+def draw_numbers(draw, x, y, w, h):
+    """BY THE NUMBERS strip: the day's key figures at a glance."""
+    draw.rectangle([x, y, x + w, y + h], fill=NAVY)
+    bw = w // len(NUMBERS)
+    f_big = font(SERIF_B, 19)
+    f_lab = font(SANS, 9)
+    for i, (big, label) in enumerate(NUMBERS):
+        cx = x + i * bw + bw // 2
+        if i:
+            draw.line([(x + i * bw, y + 6), (x + i * bw, y + h - 6)],
+                      fill=(90, 105, 130), width=1)
+        draw.text((cx, y + 3), big, font=f_big, fill=GOLD, anchor="ma")
+        lines = wrap(draw, label, f_lab, bw - 12)[:1]
+        for line in lines:
+            draw.text((cx, y + h - 13), line, font=f_lab, fill=CREAM,
+                      anchor="ma")
 
 
 def build():
@@ -633,30 +697,33 @@ def build():
     draw.rectangle([0, 0, W, 102], fill=NAVY)
     draw.text((24, 12), "THE DAY IN WORLD NEWS",
               font=font(SANS_B, 13), fill=GOLD)
-    draw.text((W - 24, 12), "40 STORIES · 6 CONTINENTS · ONE DAY",
+    draw.text((W - 24, 12), "42 STORIES · 6 CONTINENTS · ONE DAY",
               font=font(SANS_B, 13), fill=GOLD, anchor="ra")
     draw.text((W // 2, 30), "Tuesday 17 November 2026",
               font=font(SERIF_B, 52), fill=CREAM, anchor="ma")
     draw.rectangle([0, 102, W, 106], fill=GOLD)
 
     # ---- Lead row: stories 1-2 ----
-    draw_lead(img, draw, 8, 110, 500, 186, MAIN[0])
-    draw_lead(img, draw, 516, 110, 500, 186, MAIN[1])
+    draw_lead(img, draw, 8, 110, 500, 182, MAIN[0])
+    draw_lead(img, draw, 516, 110, 500, 182, MAIN[1])
 
     # ---- Two rows of five: stories 3-12 ----
     for i, story in enumerate(MAIN[2:]):
         row, col = divmod(i, 5)
-        draw_small(draw, 8 + col * 203, 304 + row * 174, 195, 166, story)
+        draw_small(draw, 8 + col * 203, 300 + row * 166, 195, 158, story)
+
+    # ---- BY THE NUMBERS strip ----
+    draw_numbers(draw, 8, 632, 1008, 38)
 
     # ---- Bottom: map + list ----
-    draw_map(draw, 8, 652, 500, 340)
-    draw_list(draw, 516, 652, 500, 340)
+    draw_map(draw, 8, 678, 500, 312)
+    draw_list(draw, 516, 678, 500, 312)
 
     # ---- Footer ----
-    draw.text((W // 2, 999),
+    draw.text((W // 2, 997),
               "Every story was reported on Tuesday 17 November 2026; disputed claims are attributed.",
               font=font(SANS, 10), fill=GREY, anchor="ma")
-    draw.text((W // 2, 1011),
+    draw.text((W // 2, 1009),
               "Sources: Reuters, AP, AFP, BBC, Al Jazeera, UN News and others. Original drawings.",
               font=font(SANS, 10), fill=GREY, anchor="ma")
     return img
